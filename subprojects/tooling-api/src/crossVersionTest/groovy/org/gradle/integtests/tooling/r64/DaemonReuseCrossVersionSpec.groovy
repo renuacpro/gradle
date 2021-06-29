@@ -18,7 +18,9 @@ package org.gradle.integtests.tooling.r64
 
 import org.gradle.integtests.fixtures.executer.GradleExecuter
 import org.gradle.integtests.tooling.fixture.ToolingApiSpecification
+import spock.lang.Ignore
 
+@Ignore
 class DaemonReuseCrossVersionSpec extends ToolingApiSpecification {
     GradleExecuter executer
 
