@@ -33,8 +33,6 @@ class FunctionalTest(
         }
     }
 
-    val enableTestDistribution = testCoverage.testDistribution
-
     applyTestDefaults(model, this, testTasks, notQuick = !testCoverage.isQuick, os = testCoverage.os,
         extraParameters = (
             listOf(functionalTestExtraParameters("FunctionalTest", testCoverage.os, testCoverage.testJvmVersion.major.toString(), testCoverage.vendor.name)) +
@@ -44,16 +42,6 @@ class FunctionalTest(
         timeout = testCoverage.testType.timeout,
         extraSteps = extraBuildSteps,
         preSteps = preBuildSteps)
-
-    params {
-        if (enableTestDistribution) {
-            param("env.GRADLE_ENTERPRISE_ACCESS_KEY", "%e.grdev.net.access.key%")
-        }
-
-        if (testCoverage.testDistribution) {
-            param("maxParallelForks", "16")
-        }
-    }
 
     if (testCoverage.testType == TestType.soak || testTasks.contains("plugins:")) {
         failureConditions {
