@@ -68,7 +68,7 @@ public class SessionFailureReportingActionExecuter implements BuildActionExecute
             BuildStartedTime buildStartedTime = BuildStartedTime.startingAt(requestContext.getStartTime());
             BuildLogger buildLogger = new BuildLogger(Logging.getLogger(BuildSessionLifecycleBuildActionExecuter.class), styledTextOutputFactory, action.getStartParameter(), requestContext, buildStartedTime, clock, workValidationWarningReporter);
             buildLogger.buildFinished(new BuildResult(null, failure));
-            buildLogger.logResult(failure);
+            buildLogger.logResult(action.isRunTasks(), failure);
             return BuildActionResult.failed(failure);
         }
     }

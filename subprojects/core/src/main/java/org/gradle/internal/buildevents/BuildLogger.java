@@ -39,7 +39,6 @@ public class BuildLogger implements InternalBuildListener, TaskExecutionGraphLis
     private final Logger logger;
     private final BuildExceptionReporter exceptionReporter;
     private final BuildResultLogger resultLogger;
-    private String action;
 
     public BuildLogger(
         Logger logger,
@@ -102,15 +101,10 @@ public class BuildLogger implements InternalBuildListener, TaskExecutionGraphLis
 
     @Override
     public void buildFinished(BuildResult result) {
-        this.action = result.getAction();
     }
 
-    public void logResult(Throwable buildFailure) {
-        if (action == null) {
-            // This logger has been replaced (for example using `Gradle.useLogger()`), so don't log anything
-            return;
-        }
-        BuildResult buildResult = new BuildResult(action, null, buildFailure);
+    public void logResult(boolean runTasks, Throwable buildFailure) {
+        BuildResult buildResult = new BuildResult(runTasks ? "Build": "Configure", null, buildFailure);
         exceptionReporter.buildFinished(buildResult);
         resultLogger.buildFinished(buildResult);
     }
