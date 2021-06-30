@@ -21,6 +21,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.component.BuildIdentifier;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
+import org.gradle.api.internal.TaskInternal;
 import org.gradle.api.internal.initialization.ScriptClassPathInitializer;
 import org.gradle.execution.MultipleBuildFailures;
 import org.gradle.internal.build.BuildState;
@@ -44,7 +45,7 @@ public class CompositeBuildClassPathInitializer implements ScriptClassPathInitia
         boolean found = false;
         for (ResolvedArtifactResult artifactResult : artifacts.getArtifacts()) {
             ComponentArtifactIdentifier componentArtifactIdentifier = artifactResult.getId();
-            found |= build(currentBuild, componentArtifactIdentifier);
+            found |= scheduleTasks(currentBuild, componentArtifactIdentifier);
         }
         if (found) {
             List<Throwable> taskFailures = new ArrayList<>();
@@ -55,7 +56,7 @@ public class CompositeBuildClassPathInitializer implements ScriptClassPathInitia
         }
     }
 
-    public boolean build(BuildIdentifier requestingBuild, ComponentArtifactIdentifier artifact) {
+    public boolean scheduleTasks(BuildIdentifier requestingBuild, ComponentArtifactIdentifier artifact) {
         boolean found = false;
         if (artifact instanceof CompositeProjectComponentArtifactMetadata) {
             CompositeProjectComponentArtifactMetadata compositeBuildArtifact = (CompositeProjectComponentArtifactMetadata) artifact;
@@ -63,7 +64,7 @@ public class CompositeBuildClassPathInitializer implements ScriptClassPathInitia
             assert !requestingBuild.equals(targetBuild);
             Set<? extends Task> tasks = compositeBuildArtifact.getBuildDependencies().getDependencies(null);
             for (Task task : tasks) {
-                includedBuildTaskGraph.addTask(requestingBuild, targetBuild, task.getPath());
+                includedBuildTaskGraph.queueTaskForExecution(requestingBuild, targetBuild, (TaskInternal) task);
             }
             found = true;
         }

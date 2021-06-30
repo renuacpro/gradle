@@ -38,7 +38,12 @@ public class DefaultIncludedBuildTaskGraph implements IncludedBuildTaskGraph {
     }
 
     @Override
-    public synchronized void addTask(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, String taskPath) {
+    public IncludedBuildTaskResource queueTaskForExecution(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, TaskInternal task) {
+        return queueTaskForExecution(requestingBuild, targetBuild, task.getPath());
+    }
+
+    @Override
+    public synchronized IncludedBuildTaskResource queueTaskForExecution(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, String taskPath) {
         if (isRoot(targetBuild)) {
             if (findTaskInRootBuild(taskPath) == null) {
                 buildRegistry.getRootBuild().getBuild().getTaskGraph().addAdditionalEntryTask(taskPath);
@@ -46,6 +51,18 @@ public class DefaultIncludedBuildTaskGraph implements IncludedBuildTaskGraph {
         } else {
             buildControllerFor(targetBuild).queueForExecution(taskPath);
         }
+
+        return new IncludedBuildTaskResource() {
+            @Override
+            public TaskInternal getTask() {
+                return DefaultIncludedBuildTaskGraph.this.getTask(targetBuild, taskPath);
+            }
+
+            @Override
+            public State getTaskState() {
+                return DefaultIncludedBuildTaskGraph.this.getTaskState(targetBuild, taskPath);
+            }
+        };
     }
 
     @Override
@@ -57,8 +74,7 @@ public class DefaultIncludedBuildTaskGraph implements IncludedBuildTaskGraph {
         includedBuilds.awaitTaskCompletion(taskFailures);
     }
 
-    @Override
-    public IncludedBuildTaskResource.State getTaskState(BuildIdentifier targetBuild, String taskPath) {
+    private IncludedBuildTaskResource.State getTaskState(BuildIdentifier targetBuild, String taskPath) {
         if (isRoot(targetBuild)) {
             TaskInternal task = getTask(targetBuild, taskPath);
             if (task.getState().getFailure() != null) {
@@ -73,8 +89,7 @@ public class DefaultIncludedBuildTaskGraph implements IncludedBuildTaskGraph {
         }
     }
 
-    @Override
-    public TaskInternal getTask(BuildIdentifier targetBuild, String taskPath) {
+    private TaskInternal getTask(BuildIdentifier targetBuild, String taskPath) {
         if (isRoot(targetBuild)) {
             TaskInternal task = findTaskInRootBuild(taskPath);
             if (task == null) {

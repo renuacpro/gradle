@@ -20,22 +20,24 @@ import org.gradle.api.artifacts.component.BuildIdentifier;
 import org.gradle.api.internal.TaskInternal;
 import org.gradle.internal.service.scopes.Scopes;
 import org.gradle.internal.service.scopes.ServiceScope;
+import org.gradle.util.Path;
 
 import java.util.function.Consumer;
 
 @ServiceScope(Scopes.BuildTree.class)
 public interface IncludedBuildTaskGraph {
     /**
-     * Queues a task for execution, but does not schedule it.
+     * Queues a task for execution, but does not schedule it. Use {@link #runScheduledTasks(Consumer)} or {@link IncludedBuildControllers#populateTaskGraphs()} to schedule tasks.
      */
-    void addTask(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, String taskPath);
+    IncludedBuildTaskResource queueTaskForExecution(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, TaskInternal task);
+
+    /**
+     * Queues a task for execution, but does not schedule it. Use {@link #runScheduledTasks(Consumer)} or {@link IncludedBuildControllers#populateTaskGraphs()} to schedule tasks.
+     */
+    IncludedBuildTaskResource queueTaskForExecution(BuildIdentifier requestingBuild, BuildIdentifier targetBuild, String taskPath);
 
     /**
      * Schedules and executes queued tasks, collecting any task failures into the given collection.
      */
     void runScheduledTasks(Consumer<? super Throwable> taskFailures);
-
-    IncludedBuildTaskResource.State getTaskState(BuildIdentifier targetBuild, String taskPath);
-
-    TaskInternal getTask(BuildIdentifier targetBuild, String taskPath);
 }
