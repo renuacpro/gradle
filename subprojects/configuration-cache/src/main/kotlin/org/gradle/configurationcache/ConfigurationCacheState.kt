@@ -84,6 +84,7 @@ enum class StateType {
     Work, Model
 }
 
+
 internal
 interface ConfigurationCacheStateFile {
     fun outputStream(): OutputStream
