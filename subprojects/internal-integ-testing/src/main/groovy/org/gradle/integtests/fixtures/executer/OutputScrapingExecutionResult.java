@@ -17,7 +17,6 @@ package org.gradle.integtests.fixtures.executer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import junit.framework.AssertionFailedError;
 import org.gradle.integtests.fixtures.logging.GroupedOutputFixture;
 import org.gradle.internal.Pair;
 import org.gradle.internal.featurelifecycle.LoggingDeprecatedFeatureHandler;
@@ -90,7 +89,8 @@ public class OutputScrapingExecutionResult implements ExecutionResult {
         LogContent filteredOutput = this.output.ansiCharsToPlainText().removeDebugPrefix();
         Pair<LogContent, LogContent> match = filteredOutput.splitOnFirstMatchingLine(BUILD_RESULT_PATTERN);
         if (match == null) {
-            throw new AssertionFailedError("No build result summary found in build output.");
+            this.mainContent = filteredOutput;
+            this.postBuild = LogContent.empty();
         } else {
             this.mainContent = match.getLeft();
             this.postBuild = match.getRight().drop(1);
