@@ -80,6 +80,11 @@ import kotlin.contracts.contract
 
 
 internal
+enum class StateType {
+    Work, Model
+}
+
+internal
 interface ConfigurationCacheStateFile {
     fun outputStream(): OutputStream
     fun inputStream(): InputStream
